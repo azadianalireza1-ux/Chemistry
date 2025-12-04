@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>شیمی امیرکبیر</title>
+  <meta name="description" content="جدول تناوبی کامل با مدل فضایی اوربیتال‌ها، بارگذاری تنبل ۱–۱۱۸، آزمایشگاه جامع (pH، نرنست، ΔH)، بالانس خودکار واکنش‌ها، مولکول‌ساز 2D و نمایش 3D، اسپکتروسکوپی، بانک واکنش‌ها، خروجی PNG/CSV، تمرین و امتیازدهی، و آفلاین — همه در یک فایل." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0c1022; --bg-soft:#141735; --card:#171a3a; --text:#e9ecf7; --muted:#a6afd3;
+      --brand:#5ee7ff; --brand-2:#a78bfa; --accent:#ffcb6b; --acid:#ff5f6d; --base:#37ff8b;
+      --border:rgba(255,255,255,.09); --shadow:0 10px 28px rgba(0,0,0,.25);
+      --grid:40px;
+    }
+    .light{
+      --bg:#f6f8fc; --bg-soft:#ffffff; --card:#ffffff; --text:#0d1020; --muted:#4b5473;
+      --brand:#0ea5e9; --brand-2:#7c3aed; --accent:#ea580c; --acid:#ef4444; --base:#16a34a;
+      --border:rgba(0,0,0,.08); --shadow:0 10px 20px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Vazirmatn,system-ui,-apple-system,"Segoe UI",Roboto;
+      background: radial-gradient(1200px 600px at 8% -12%, #1a1f3f 0%, var(--bg) 45%) fixed;
+      color:var(--text); line-height:1.7;
+    }
+    a{color:var(--brand); text-decoration:none}
+    header{position:sticky; top:0; z-index:60; backdrop-filter:blur(12px);
+      background:linear-gradient(180deg, rgba(17,20,38,.75), rgba(17,20,38,.4));
+      border-bottom:1px solid var(--border);}
+    .wrap{max-width:1260px; margin:0 auto; padding:0 16px}
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800}
+    .brand .logo{width:36px; height:36px; border-radius:10px;
+      background:conic-gradient(from 210deg, var(--brand), var(--brand-2), var(--accent), var(--brand));
+      box-shadow:var(--shadow); position:relative}
+    .brand .logo::after{content:"AM"; position:absolute; inset:0; display:grid; place-items:center; font-size:.75rem; font-weight:800; color:#fff; mix-blend-mode:plus-lighter}
+    .nav ul{display:flex; gap:10px; list-style:none; margin:0; padding:0}
+    .nav a{padding:8px 12px; border-radius:10px; border:1px solid transparent}
+    .nav a:hover{border-color:var(--border); background:rgba(255,255,255,.06)}
+    .tools{display:flex; align-items:center; gap:8px}
+    button,input,select,textarea{font-family:inherit; color:inherit; background:var(--card); border:1px solid var(--border); padding:10px 12px; border-radius:10px}
+    button{cursor:pointer}
+    .btn{background:linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%); color:#0b0f1f; font-weight:800; border:none}
+    .btn.ghost{background:transparent; color:var(--brand); border:1px solid var(--brand)}
+    .hero{padding:46px 0 16px; display:grid; gap:12px}
+    .hero h1{font-size:2rem; margin:0}
+    .hero p{color:var(--muted); margin:0}
+    .kpi{display:flex; gap:10px; flex-wrap:wrap}
+    .chip{padding:8px 10px; border-radius:10px; border:1px dashed var(--border); color:var(--muted)}
+    .section{padding:22px 0}
+    .grid{display:grid; gap:16px; grid-template-columns:repeat(12,1fr)}
+    .card{background:linear-gradient(180deg, var(--card), var(--bg-soft)); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:var(--shadow)}
+    .card h3{margin:0 0 8px; font-size:1.12rem}
+    .card p{margin:0 0 12px; color:var(--muted)}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--border)}
+    .ok{color:var(--base); font-weight:800}
+    .warn{color:var(--accent); font-weight:800}
+    .bad{color:var(--acid); font-weight:800}
+    .info{font-size:.92rem; color:var(--muted)}
+
+    /* جدول تناوبی */
+    .ptable-wrap{display:grid; grid-template-columns:380px 1fr; gap:16px}
+    .ptable-controls{display:grid; gap:10px}
+    .ptable{display:grid; grid-template-columns:repeat(18, var(--grid)); gap:6px; padding:10px; background:var(--bg-soft); border:1px solid var(--border); border-radius:12px; overflow:auto; max-height:520px}
+    .el{width:var(--grid); height:calc(var(--grid) + 8px); border-radius:10px; border:1px solid var(--border); display:grid; place-items:center; position:relative; font-weight:800; font-size:.9rem; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); transition:.15s transform ease}
+    .el:focus{outline:2px solid var(--brand)}
+    .el:hover{transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,.18)}
+    .el .num{position:absolute; top:4px; left:6px; font-size:.62rem; color:var(--muted)}
+    .el .name{position:absolute; bottom:4px; inset-inline:4px; font-size:.6rem; color:var(--muted); text-align:center}
+    .cat-alkali{outline:2px solid var(--acid)} .cat-alkaline{outline:2px solid #ff9f59} .cat-transition{outline:2px solid #69c}
+    .cat-post{outline:2px solid #8ad} .cat-metalloid{outline:2px solid #b5e07e} .cat-nonmetal{outline:2px solid var(--base)}
+    .cat-halogen{outline:2px solid #e6b800} .cat-noble{outline:2px solid var(--brand)} .cat-lan{outline:2px dashed var(--brand-2)} .cat-act{outline:2px dashed var(--accent)}
+
+    /* پنل اوربیتال‌ها */
+    #orbitalPanel canvas{width:100%; height:300px; background:linear-gradient(180deg, #0b1022, #0e1228); border-radius:12px; border:1px solid var(--border)}
+
+    /* مولکول‌ساز 2D */
+    .mol{background:var(--bg-soft); border:1px solid var(--border); border-radius:12px; padding:10px}
+    svg{width:100%; height:280px} .atom{fill:#fff; stroke:var(--border); cursor:pointer} .bond{stroke:#8ab; stroke-width:3} .label{font-size:12px; fill:var(--text); pointer-events:none}
+
+    /* اسپکتروسکوپی و 3D */
+    .spec{background:var(--bg-soft); border:1px solid var(--border); border-radius:12px; padding:10px}
+    canvas#specCanvas, canvas#mol3dCanvas{width:100%; height:220px; background:linear-gradient(180deg, #0b1022, #0e1228); border-radius:8px}
+
+    /* واکنش‌نما و بانک */
+    .rxn{display:grid; gap:10px}
+    .rxn .eq{font-family:ui-monospace,Menlo,Consolas,monospace; background:var(--bg-soft); padding:10px; border-radius:10px; border:1px solid var(--border)}
+    .table{width:100%; border-collapse:collapse; margin-top:8px}
+    .table th,.table td{border:1px solid var(--border); padding:8px; text-align:center; font-size:.9rem}
+    .footer{margin-top:36px; padding:24px 0; border-top:1px solid var(--border); color:var(--muted)}
+  
+@media (max-width: 900px){
+  .ptable-wrap{grid-template-columns:1fr; }
+  .ptable-controls{order:2;}
+  #ptable-grid{order:1;}
+  .grid{grid-template-columns:1fr !important;}
+  header .nav ul{display:none;}
+}
+@media (max-width:600px){
+  .el{transform:scale(.85); }
+  :root{ --grid:32px; }
+}
+
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div>شیمی امیرکبیر</div>
+          <small style="color:var(--muted)">اثر تیم آری‌ماند — یک فایل، یک دنیا</small>
+        </div>
+      </div>
+      <ul>
+        <li><a href="#ptable">جدول تناوبی</a></li>
+        <li><a href="#lab">آزمایشگاه</a></li>
+        <li><a href="#mol">مولکول‌ها</a></li>
+        <li><a href="#spec">طیف و 3D</a></li>
+        <li><a href="#rxn">واکنش‌نما</a></li>
+        <li><a href="#bank">بانک واکنش‌ها</a></li>
+        <li><a href="#about">درباره</a></li>
+      </ul>
+      <div class="tools">
+        <div id="scorePill" class="pill">امتیاز: 0</div>
+        <button id="theme" class="btn ghost">حالت روز/شب</button>
+        <a class="btn" href="#lab">شروع سریع</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>جدول ۱–۱۱۸ با مدل فضایی اوربیتال‌ها + آزمایشگاه کامل</h1>
+      <p>یک‌جا: جدول، اوربیتال‌ها با قاعده‌ی هاند، pH، نرنست، ΔH، بالانس، 2D/3D مولکول، طیف، بانک واکنش‌ها، خروجی PNG/CSV، تمرین و آفلاین.</p>
+      <div class="kpi">
+        <div class="chip">بارگذاری تنبل و بهینه</div>
+        <div class="chip">بدون کتابخانه خارجی</div>
+        <div class="chip">برندینگ آری‌ماند</div>
+      </div>
+    </section>
+
+    <!-- جدول تناوبی + پنل خواص + اوربیتال‌ها -->
+    <section id="ptable" class="section card">
+      <h3>جدول تناوبی زنده با مدل فضایی اوربیتال‌ها</h3>
+      <p class="info">جستجو فازی نماد/نام/عدد اتمی، فیلتر دسته‌ها، پنل خواص، ایزوتوپ‌ها، و نمایش اوربیتال‌ها (s,p,d,f) بر اساس Z.</p>
+      <div class="ptable-wrap">
+        <div class="ptable-controls">
+          <div class="pill">راهنما: / برای فوکوس جستجو. Enter برای انتخاب.</div>
+          <div style="display:grid; gap:8px">
+            <input id="q" placeholder="H، هیدروژن یا 1" />
+            <select id="cat">
+              <option value="">همه</option>
+              <option value="alkali">فلزات قلیایی</option>
+              <option value="alkaline">فلزات قلیایی خاکی</option>
+              <option value="transition">فلزات واسطه</option>
+              <option value="post">فلزات پس‌واسطه</option>
+              <option value="metalloid">شبه‌فلزها</option>
+              <option value="nonmetal">نافلزها</option>
+              <option value="halogen">هالوژن‌ها</option>
+              <option value="noble">گازهای نجیب</option>
+              <option value="lan">لانتانیدها</option>
+              <option value="act">آکتینیدها</option>
+            </select>
+            <button id="loadFull" class="btn ghost">بارگذاری کامل جدول (۱–۱۱۸)</button>
+            <div id="sel" class="pill">عنصر انتخابی: —</div>
+
+            <div id="props" class="card" style="padding:10px">
+              <div><b>نماد:</b> <span id="p-symbol">—</span></div>
+              <div><b>نام:</b> <span id="p-name">—</span></div>
+              <div><b>عدد اتمی:</b> <span id="p-num">—</span></div>
+              <div><b>جرم اتمی:</b> <span id="p-mass">—</span></div>
+              <div><b>دسته:</b> <span id="p-cat">—</span></div>
+              <div><b>حالت در ۲۵°C:</b> <span id="p-state">—</span></div>
+              <div><b>پیکربندی الکترونی:</b> <span id="p-conf">—</span></div>
+              <div style="display:flex; gap:8px; margin-top:8px">
+                <button id="exportIso" class="btn ghost">خروجی CSV ایزوتوپ‌ها</button>
+              </div>
+              <div style="margin-top:10px">
+                <b>ایزوتوپ‌های رایج:</b>
+                <table class="table" id="isoTable">
+                  <thead><tr><th>ایزوتوپ</th><th>فراوانی تقریبی</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="orbitalPanel" class="card" style="padding:10px">
+              <h4 style="margin:0 0 8px">مدل فضایی اوربیتال‌ها</h4>
+              <canvas id="orbitalCanvas" width="320" height="320"></canvas>
+              <div style="display:flex; gap:8px; margin-top:8px">
+                <div class="pill">رنگ‌ها: s=آبی، p=سبز، d=نارنجی، f=بنفش</div>
+                <button id="exportOrbitals" class="btn">خروجی PNG اوربیتال</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="ptable-grid" class="ptable" aria-label="Periodic Table"></div>
+      </div>
+    </section>
+
+    <!-- آزمایشگاه جامع -->
+    <section id="lab" class="section grid">
+      <div class="card" style="grid-column:1 / span 6">
+        <h3>محاسبه‌گر pH (قوی/ضعیف/بافر)</h3>
+        <p class="info">قوی‌ها: pH≈−log[H+]، ضعیف‌ها: [H+]≈√(Ka·C)، بافر: pH=pKa+log([A−]/[HA]).</p>
+        <div style="display:grid; gap:8px">
+          <select id="phType">
+            <option value="strongA">اسید قوی</option>
+            <option value="strongB">باز قوی</option>
+            <option value="weakA">اسید ضعیف</option>
+            <option value="weakB">باز ضعیف</option>
+            <option value="buffer">بافر (H–H)</option>
+          </select>
+          <input id="C" type="number" step="0.0001" placeholder="غلظت (M)" />
+          <input id="Ka" type="number" step="0.0000001" placeholder="Ka یا Kb (برای ضعیف‌ها)" />
+          <input id="pKa" type="number" step="0.01" placeholder="pKa (برای بافر)" />
+          <input id="ratio" type="number" step="0.001" placeholder="[باز مزدوج]/[اسید] (برای بافر)" />
+          <button id="calcPH" class="btn">محاسبه pH</button>
+          <div id="phOut" class="pill">pH: —</div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:7 / span 6">
+        <h3>الکتروشیمی (نرنست و Ecell)</h3>
+        <p class="info">E = E° − (0.05916/n) log Q در ۲۵°C. ورودی‌ها را بده تا E محاسبه شود.</p>
+        <div style="display:grid; gap:8px">
+          <input id="E0" type="number" step="0.001" placeholder="E° (ولت)" />
+          <input id="n" type="number" step="1" placeholder="n (تعداد الکترون‌ها)" />
+          <input id="Q" type="number" step="0.000001" placeholder="Q (نسبت واکنش)" />
+          <button id="calcNernst" class="btn">محاسبه نرنست</button>
+          <div id="nernstOut" class="pill">E: —</div>
+        </div>
+        <div class="pill warn">نکته: Q آموزشی است؛ برای دقت بالا، فعالیت‌ها باید لحاظ شوند.</div>
+      </div>
+
+      <div class="card" style="grid-column:1 / span 6">
+        <h3>ترموشیمی (ΔH واکنش)</h3>
+        <p class="info">ΔH ≈ ∑ΔHf(محصولات) − ∑ΔHf(واکنش‌گرها). بانک آموزشی گونه‌های رایج ضمیمه است.</p>
+        <div style="display:grid; gap:8px">
+          <input id="rxnH" placeholder="مثال: CH4 + 2O2 -> CO2 + 2H2O(l)" />
+          <button id="calcDH" class="btn">محاسبه ΔH</button>
+          <div id="dhOut" class="pill">ΔH: —</div>
+        </div>
+        <div class="pill warn">دقت داده‌ها آموزشی است؛ برای تحقیق، بانک کامل نیاز است.</div>
+      </div>
+
+      <div class="card" style="grid-column:7 / span 6">
+        <h3>واکنش‌نما با بالانس خودکار</h3>
+        <p class="info">ضرایب صحیح با حل دستگاه؛ تست تعادل اتم‌ها انجام می‌شود. امتیاز آموزشی پس از موفقیت.</p>
+        <div class="rxn">
+          <input id="eq" class="eq" placeholder="KMnO4 + HCl -> KCl + MnCl2 + Cl2 + H2O" />
+          <button id="balance" class="btn">بالانس کن</button>
+          <div id="eqOut" class="pill">نتیجه: —</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- مولکول‌ساز 2D + نمایش 3D سبک -->
+    <section id="mol" class="section card">
+      <h3>مولکول‌ساز 2D و نمایش 3D توپ‌وچوب</h3>
+      <p class="info">2D: اضافه‌کردن اتم‌ها و پیوندها با بررسی ظرفیت (H=1, O=2, N=3, C=4). 3D: نمونه‌ها با چرخش و نور ساده در Canvas.</p>
+      <div class="row" style="margin-bottom:10px">
+        <button class="btn ghost" data-sample="H2O">آب (H2O)</button>
+        <button class="btn ghost" data-sample="C2H6O">اتانول (C2H6O)</button>
+        <button class="btn ghost" data-sample="C6H6">بنزن (C6H6)</button>
+        <button id="clearMol" class="btn">پاکسازی 2D</button>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px">
+        <div class="mol">
+          <svg id="molCanvas" viewBox="0 0 600 280"></svg>
+          <div class="pill" id="molOut">راهنما 2D: Alt=H، Shift=O، Ctrl=N، بدون کلید=C. روی دو اتم برای پیوند کلیک کن.</div>
+        </div>
+        <div class="spec">
+          <div class="row" style="margin-bottom:8px">
+            <select id="mol3dSel">
+              <option value="H2O">H2O</option>
+              <option value="CO2">CO2</option>
+              <option value="CH4">CH4</option>
+              <option value="C2H6O">C2H6O</option>
+              <option value="C6H6">C6H6</option>
+            </select>
+            <button id="mol3dDraw" class="btn">رسم 3D</button>
+          </div>
+          <canvas id="mol3dCanvas" width="600" height="220"></canvas>
+          <div class="pill">راهنما 3D: ماوس را حرکت بده تا بچرخد.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اسپکتروسکوپی آموزشی -->
+    <section id="spec" class="section card">
+      <h3>اسپکتروسکوپی آموزشی (گسیل/جذب نمادین)</h3>
+      <p class="info">انتخاب عنصر و رسم خطوط نمادین روی پس‌زمینه رنگین‌کمان. آموزشی—نه داده آزمایشگاهی کامل.</p>
+      <div class="row" style="margin-bottom:10px">
+        <select id="specEl">
+          <option value="H">H — هیدروژن</option>
+          <option value="He">He — هلیوم</option>
+          <option value="Na">Na — سدیم</option>
+          <option value="Hg">Hg — جیوه</option>
+          <option value="Fe">Fe — آهن</option>
+        </select>
+        <button id="drawSpec" class="btn">رسم طیف</button>
+      </div>
+      <div class="spec"><canvas id="specCanvas" width="800" height="220"></canvas></div>
+    </section>
+
+    <!-- بانک واکنش‌ها -->
+    <section id="bank" class="section card">
+      <h3>بانک واکنش‌ها با جستجو و فیلتر</h3>
+      <p class="info">فصل/موضوع/سطح را فیلتر کن، واکنش‌ها را ببین و با یک کلیک به واکنش‌نما بفرست.</p>
+      <div class="row" style="gap:8px; margin-bottom:8px">
+        <input id="bankQ" placeholder="جستجو نماد/نام واکنش‌گر..." />
+        <select id="bankTopic">
+          <option value="">همه موضوع‌ها</option>
+          <option value="acid-base">اسید-باز</option>
+          <option value="redox">اکسایش-کاهش</option>
+          <option value="org">آلی</option>
+          <option value="thermo">ترمو</option>
+        </select>
+        <select id="bankLevel">
+          <option value="">همه سطوح</option>
+          <option value="basic">مقدماتی</option>
+          <option value="intermediate">میانی</option>
+          <option value="advanced">پیشرفته</option>
+        </select>
+      </div>
+      <table class="table" id="bankTable">
+        <thead><tr><th>واکنش</th><th>موضوع</th><th>سطح</th><th>ارسال به واکنش‌نما</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- درباره -->
+    
+<section id="about" class="section grid">
+  <div class="card" style="grid-column:1 / span 7">
+    <h3>درباره ما ✨</h3>
+    <p>این پروژه با عشق و خلاقیت توسط <strong>گروه برنامه‌نویسی آری‌ماند</strong> توسعه یافته است.</p>
+    <ul class="kpi">
+      <li class="chip">توسعه‌دهندگان: علیرضا آزادیان، علیرضا مولایی‌فر، محمد سعیدی 💻</li>
+      <li class="chip">دبیر راهنما: آقای شجاع امیدی‌آرا 👨‍🏫</li>
+      <li class="chip">دبیرستان امیرکبیر — خرم‌آباد، لرستان 🏫</li>
+    </ul>
+  </div>
+  <div class="card" style="grid-column:8 / span 5">
+    <h3>پیام ما ❤️</h3>
+    <p class="info">ما باور داریم که علم باید زیبا، قابل‌فهم و در دسترس همه باشد. امیدواریم این پروژه الهام‌بخش نسل جدید دانشمندان باشد.</p>
+    <div class="pill">با بهترین آرزوها برای آینده‌ای روشن‌تر ✨</div>
+  </div>
+</section>
+
+
+    <footer class="wrap footer">
+      <div>© شیمی امیرکبیر — آری‌ماند. طراحی با عشق و وسواس.</div>
+      <div>برای نسخه‌ی نمایشی جهانی: دیتاست‌های علمی کامل‌تر را می‌افزاییم (ایزوتوپ‌ها، ΔHf، خطوط طیفی).</div>
+    </footer>
+  </main>
+
+  <!-- داده‌ی کامل ۳۷–۱۱۸ فشرده‌شده داخل اسکریپت JSON (نمونه‌ی فشرده؛ قابل جایگزینی با دیتاست کامل) -->
+  <script type="application/json" id="el-full">
+  [
+    {"n":37,"s":"Rb","name":"روبیدیوم","cat":"alkali","state":"جامد","mass":85.468,"row":5,"col": 18,"iso":[["Rb-85",72.2],["Rb-87",27.8]]},
+    {"n":38,"s":"Sr","name":"استرونسیم","cat":"alkaline","state":"جامد","mass":87.62,"row":5,"col": 17,"iso":[["Sr-88",82.6],["Sr-86",9.9]]},
+    {"n":39,"s":"Y","name":"ایتریم","cat":"transition","state":"جامد","mass":88.906,"row":5,"col": 16,"iso":[["Y-89",100]]},
+    {"n":40,"s":"Zr","name":"زیرکونیوم","cat":"transition","state":"جامد","mass":91.224,"row":5,"col": 15,"iso":[["Zr-90",51.5]]},
+    {"n":41,"s":"Nb","name":"نیوبیوم","cat":"transition","state":"جامد","mass":92.906,"row":5,"col": 14,"iso":[["Nb-93",100]]},
+    {"n":42,"s":"Mo","name":"مولیبدن","cat":"transition","state":"جامد","mass":95.95,"row":5,"col": 13,"iso":[["Mo-98",24.1]]},
+    {"n":43,"s":"Tc","name":"تکنتیوم","cat":"transition","state":"جامد","mass":98,"row":5,"col": 12,"iso":[["Tc-99","مصنوعی"]]},
+    {"n":44,"s":"Ru","name":"رودیوم","cat":"transition","state":"جامد","mass":101.07,"row":5,"col": 11,"iso":[["Ru-102",31.6]]},
+    {"n":45,"s":"Rh","name":"رودیوم","cat":"transition","state":"جامد","mass":102.905,"row":5,"col": 10,"iso":[["Rh-103",100]]},
+    {"n":46,"s":"Pd","name":"پالادیم","cat":"transition","state":"جامد","mass":106.42,"row":5,"col": 9,"iso":[["Pd-106",27.3]]},
+    {"n":47,"s":"Ag","name":"نقره","cat":"transition","state":"جامد","mass":107.8682,"row":5,"col": 8,"iso":[["Ag-107",51.8],["Ag-109",48.2]]},
+    {"n":48,"s":"Cd","name":"کادمیوم","cat":"transition","state":"جامد","mass":112.414,"row":5,"col": 7,"iso":[["Cd-114",28.7]]},
+    {"n":49,"s":"In","name":"ایندیم","cat":"post","state":"جامد","mass":114.818,"row":5,"col": 6,"iso":[["In-115",95.7]]},
+    {"n":50,"s":"Sn","name":"قلع","cat":"post","state":"جامد","mass":118.710,"row":5,"col": 5,"iso":[["Sn-120",32.6]]},
+    {"n":51,"s":"Sb","name":"آنتیموان","cat":"metalloid","state":"جامد","mass":121.760,"row":5,"col": 4,"iso":[["Sb-121",57.4],["Sb-123",42.6]]},
+    {"n":52,"s":"Te","name":"تلور","cat":"metalloid","state":"جامد","mass":127.60,"row":5,"col": 3,"iso":[["Te-130",34.1]]},
+    {"n":53,"s":"I","name":"ید","cat":"halogen","state":"جامد","mass":126.904,"row":5,"col": 2,"iso":[["I-127",100]]},
+    {"n":54,"s":"Xe","name":"زنون","cat":"noble","state":"گاز","mass":131.293,"row":5,"col": 1,"iso":[["Xe-129",26.4]]},
+
+    {"n":55,"s":"Cs","name":"سزیم","cat":"alkali","state":"جامد","mass":132.905,"row":6,"col": 18,"iso":[["Cs-133",100]]},
+    {"n":56,"s":"Ba","name":"باریم","cat":"alkaline","state":"جامد","mass":137.327,"row":6,"col": 17,"iso":[["Ba-138",71.7]]},
+    {"n":57,"s":"La","name":"لانتان","cat":"lan","state":"جامد","mass":138.905,"row":8,"col": 15,"iso":[["La-139",99.9]]},
+    {"n":58,"s":"Ce","name":"سریم","cat":"lan","state":"جامد","mass":140.116,"row":8,"col": 14,"iso":[["Ce-140",88.5]]},
+    {"n":59,"s":"Pr","name":"پرازئودیمیم","cat":"lan","state":"جامد","mass":140.908,"row":8,"col": 13,"iso":[["Pr-141",100]]},
+    {"n":60,"s":"Nd","name":"نئودیمیم","cat":"lan","state":"جامد","mass":144.242,"row":8,"col": 12,"iso":[["Nd-142",27.2]]},
+    {"n":61,"s":"Pm","name":"پرومتیوم","cat":"lan","state":"جامد","mass":145,"row":8,"col": 11,"iso":[["Pm-147","مصنوعی"]]},
+    {"n":62,"s":"Sm","name":"ساماریم","cat":"lan","state":"جامد","mass":150.36,"row":8,"col": 10,"iso":[["Sm-152",26.7]]},
+    {"n":63,"s":"Eu","name":"یوروپیوم","cat":"lan","state":"جامد","mass":151.964,"row":8,"col": 9,"iso":[["Eu-153",52.2]]},
+    {"n":64,"s":"Gd","name":"گادولینیوم","cat":"lan","state":"جامد","mass":157.25,"row":8,"col": 8,"iso":[["Gd-158",24.8]]},
+    {"n":65,"s":"Tb","name":"تربیم","cat":"lan","state":"جامد","mass":158.925,"row":8,"col": 7,"iso":[["Tb-159",100]]},
+    {"n":66,"s":"Dy","name":"دیسپروزیم","cat":"lan","state":"جامد","mass":162.500,"row":8,"col": 6,"iso":[["Dy-164",28.2]]},
+    {"n":67,"s":"Ho","name":"هولمیوم","cat":"lan","state":"جامد","mass":164.930,"row":8,"col": 5,"iso":[["Ho-165",100]]},
+    {"n":68,"s":"Er","name":"اربیم","cat":"lan","state":"جامد","mass":167.259,"row":8,"col": 4,"iso":[["Er-166",33.6]]},
+    {"n":69,"s":"Tm","name":"تولیم","cat":"lan","state":"جامد","mass":168.934,"row":8,"col": 3,"iso":[["Tm-169",100]]},
+    {"n":70,"s":"Yb","name":"یتربیوم","cat":"lan","state":"جامد","mass":173.045,"row":8,"col": 2,"iso":[["Yb-174",31.8]]},
+    {"n":71,"s":"Lu","name":"لوتسیم","cat":"lan","state":"جامد","mass":174.967,"row":8,"col": 1,"iso":[["Lu-175",97.4]]},
+
+    {"n":72,"s":"Hf","name":"هفنیم","cat":"transition","state":"جامد","mass":178.49,"row":6,"col": 15,"iso":[["Hf-180",35.1]]},
+    {"n":73,"s":"Ta","name":"تانتال","cat":"transition","state":"جامد","mass":180.948,"row":6,"col": 14,"iso":[["Ta-181",99.99]]},
+    {"n":74,"s":"W","name":"تنگستن","cat":"transition","state":"جامد","mass":183.84,"row":6,"col": 13,"iso":[["W-184",30.6]]},
+    {"n":75,"s":"Re","name":"رنیوم","cat":"transition","state":"جامد","mass":186.207,"row":6,"col": 12,"iso":[["Re-187",62.6]]},
+    {"n":76,"s":"Os","name":"اسمیم","cat":"transition","state":"جامد","mass":190.23,"row":6,"col": 11,"iso":[["Os-192",41.0]]},
+    {"n":77,"s":"Ir","name":"ایریدیوم","cat":"transition","state":"جامد","mass":192.217,"row":6,"col": 10,"iso":[["Ir-193",62.7]]},
+    {"n":78,"s":"Pt","name":"پلاتین","cat":"transition","state":"جامد","mass":195.084,"row":6,"col": 9,"iso":[["Pt-195",33.8]]},
+    {"n":79,"s":"Au","name":"طلا","cat":"transition","state":"جامد","mass":196.9665,"row":6,"col": 8,"iso":[["Au-197",100]]},
+    {"n":80,"s":"Hg","name":"جیوه","cat":"transition","state":"مایع","mass":200.592,"row":6,"col": 7,"iso":[["Hg-202",29.9]]},
+    {"n":81,"s":"Tl","name":"تالیوم","cat":"post","state":"جامد","mass":204.38,"row":6,"col": 6,"iso":[["Tl-205",70.5]]},
+    {"n":82,"s":"Pb","name":"سرب","cat":"post","state":"جامد","mass":207.2,"row":6,"col": 5,"iso":[["Pb-208",52.4]]},
+    {"n":83,"s":"Bi","name":"بیسموت","cat":"post","state":"جامد","mass":208.980,"row":6,"col": 4,"iso":[["Bi-209",100]]},
+    {"n":84,"s":"Po","name":"پولونیم","cat":"post","state":"جامد","mass":209,"row":6,"col": 3,"iso":[["Po-209","رادیواکتیو"]]},
+    {"n":85,"s":"At","name":"آستاتین","cat":"halogen","state":"جامد","mass":210,"row":6,"col": 2,"iso":[["At-210","رادیواکتیو"]]},
+    {"n":86,"s":"Rn","name":"رادون","cat":"noble","state":"گاز","mass":222,"row":6,"col": 1,"iso":[["Rn-222","رادیواکتیو"]]},
+
+    {"n":87,"s":"Fr","name":"فرانسیم","cat":"alkali","state":"جامد","mass":223,"row":7,"col": 18,"iso":[["Fr-223","رادیواکتیو"]]},
+    {"n":88,"s":"Ra","name":"رادیوم","cat":"alkaline","state":"جامد","mass":226,"row":7,"col": 17,"iso":[["Ra-226","رادیواکتیو"]]},
+
+    {"n":89,"s":"Ac","name":"آکتیینیم","cat":"act","state":"جامد","mass":227,"row":9,"col": 15,"iso":[["Ac-227","رادیواکتیو"]]},
+    {"n":90,"s":"Th","name":"توریوم","cat":"act","state":"جامد","mass":232.038,"row":9,"col": 14,"iso":[["Th-232",100]]},
+    {"n":91,"s":"Pa","name":"پروتاکتینیوم","cat":"act","state":"جامد","mass":231.036,"row":9,"col": 13,"iso":[["Pa-231","رادیواکتیو"]]},
+    {"n":92,"s":"U","name":"اورانیوم","cat":"act","state":"جامد","mass":238.029,"row":9,"col": 12,"iso":[["U-238",99.3],["U-235",0.7]]},
+    {"n":93,"s":"Np","name":"نپتونیم","cat":"act","state":"جامد","mass":237,"row":9,"col": 11,"iso":[["Np-237","مصنوعی"]]},
+    {"n":94,"s":"Pu","name":"پلوتونیوم","cat":"act","state":"جامد","mass":244,"row":9,"col": 10,"iso":[["Pu-239","مصنوعی"]]},
+    {"n":95,"s":"Am","name":"آمریکیم","cat":"act","state":"جامد","mass":243,"row":9,"col": 9,"iso":[["Am-241","مصنوعی"]]},
+    {"n":96,"s":"Cm","name":"کوریوم","cat":"act","state":"جامد","mass":247,"row":9,"col": 8,"iso":[["Cm-244","مصنوعی"]]},
+    {"n":97,"s":"Bk","name":"برکلیم","cat":"act","state":"جامد","mass":247,"row":9,"col": 7,"iso":[["Bk-247","مصنوعی"]]},
+    {"n":98,"s":"Cf","name":"کالیفرنیوم","cat":"act","state":"جامد","mass":251,"row":9,"col": 6,"iso":[["Cf-252","مصنوعی"]]},
+    {"n":99,"s":"Es","name":"آینشتینیوم","cat":"act","state":"جامد","mass":252,"row":9,"col": 5,"iso":[["Es-253","مصنوعی"]]},
+    {"n":100,"s":"Fm","name":"فرمیوم","cat":"act","state":"جامد","mass":257,"row":9,"col": 4,"iso":[["Fm-257","مصنوعی"]]},
+    {"n":101,"s":"Md","name":"مندلوویوم","cat":"act","state":"جامد","mass":258,"row":9,"col": 3,"iso":[["Md-258","مصنوعی"]]},
+    {"n":102,"s":"No","name":"نوبلیوم","cat":"act","state":"جامد","mass":259,"row":9,"col": 2,"iso":[["No-259","مصنوعی"]]},
+    {"n":103,"s":"Lr","name":"لورنسیم","cat":"act","state":"جامد","mass":266,"row":9,"col": 1,"iso":[["Lr-262","مصنوعی"]]},
+
+    {"n":104,"s":"Rf","name":"ریفریوم","cat":"transition","state":"جامد","mass":267,"row":7,"col": 15,"iso":[["Rf-267","مصنوعی"]]},
+    {"n":105,"s":"Db","name":"دوبنیوم","cat":"transition","state":"جامد","mass":268,"row":7,"col": 14,"iso":[["Db-268","مصنوعی"]]},
+    {"n":106,"s":"Sg","name":"سیبورگیم","cat":"transition","state":"جامد","mass":269,"row":7,"col": 13,"iso":[["Sg-269","مصنوعی"]]},
+    {"n":107,"s":"Bh","name":"بوریم","cat":"transition","state":"جامد","mass":270,"row":7,"col": 12,"iso":[["Bh-270","مصنوعی"]]},
+    {"n":108,"s":"Hs","name":"هاسیوم","cat":"transition","state":"جامد","mass":270,"row":7,"col": 11,"iso":[["Hs-270","مصنوعی"]]},
+    {"n":109,"s":"Mt","name":"مایتنریوم","cat":"transition","state":"جامد","mass":278,"row":7,"col": 10,"iso":[["Mt-278","مصنوعی"]]},
+    {"n":110,"s":"Ds","name":"دارمشتاتیم","cat":"transition","state":"جامد","mass":281,"row":7,"col": 9,"iso":[["Ds-281","مصنوعی"]]},
+    {"n":111,"s":"Rg","name":"رونتگنیم","cat":"transition","state":"جامد","mass":282,"row":7,"col": 8,"iso":[["Rg-282","مصنوعی"]]},
+    {"n":112,"s":"Cn","name":"کوپرنیسیوم","cat":"transition","state":"جامد","mass":285,"row":7,"col": 7,"iso":[["Cn-285","مصنوعی"]]},
+    {"n":113,"s":"Nh","name":"نیهونیوم","cat":"post","state":"جامد","mass":286,"row":7,"col": 6,"iso":[["Nh-286","مصنوعی"]]},
+    {"n":114,"s":"Fl","name":"فلروویوم","cat":"post","state":"جامد","mass":289,"row":7,"col": 5,"iso":[["Fl-289","مصنوعی"]]},
+    {"n":115,"s":"Mc","name":"موسکوویوم","cat":"post","state":"جامد","mass":290,"row":7,"col": 4,"iso":[["Mc-290","مصنوعی"]]},
+    {"n":116,"s":"Lv","name":"لوورم","cat":"post","state":"جامد","mass":293,"row":7,"col": 3,"iso":[["Lv-293","مصنوعی"]]},
+    {"n":117,"s":"Ts","name":"تنسین","cat":"halogen","state":"جامد","mass":294,"row":7,"col": 2,"iso":[["Ts-294","مصنوعی"]]},
+    {"n":118,"s":"Og","name":"اوگانسون","cat":"noble","state":"—","mass":294,"row":7,"col": 1,"iso":[["Og-294","مصنوعی"]]}
+  ]
+  </script>
+
+  <script>
+    // تم
+    const themeBtn = document.getElementById('theme');
+    themeBtn.addEventListener('click',()=>{
+      document.body.classList.toggle('light');
+      themeBtn.textContent = document.body.classList.contains('light') ? 'حالت شب' : 'حالت روز';
+    });
+
+    // امتیاز
+    const scoreKey = 'chemworld_score';
+    const scorePill = document.getElementById('scorePill');
+    function setScore(v){ localStorage.setItem(scoreKey,String(v)); scorePill.textContent = `امتیاز: ${v}`; }
+    function addScore(p){ const cur = parseInt(localStorage.getItem(scoreKey)||'0',10); setScore(cur+p); }
+    setScore(parseInt(localStorage.getItem(scoreKey)||'0',10));
+
+    // داده پایه 1–36
+    let elements = [
+      {n:1,s:"H",name:"هیدروژن",cat:"nonmetal",state:"گاز",mass:1.008,row:1,col: 18,iso:[["H-1",99.98],["H-2",0.02]]},
+      {n:2,s:"He",name:"هلیوم",cat:"noble",state:"گاز",mass:4.0026,row:1,col: 1,iso:[["He-4",99.999],["He-3",0.001]]},
+      {n:3,s:"Li",name:"لیتیم",cat:"alkali",state:"جامد",mass:6.94,row:2,col: 18,iso:[["Li-7",92.5],["Li-6",7.5]]},
+      {n:4,s:"Be",name:"بریلیم",cat:"alkaline",state:"جامد",mass:9.0122,row:2,col: 17,iso:[["Be-9",100]]},
+      {n:5,s:"B",name:"بور",cat:"metalloid",state:"جامد",mass:10.81,row:2,col: 6,iso:[["B-11",80],["B-10",20]]},
+      {n:6,s:"C",name:"کربن",cat:"nonmetal",state:"جامد",mass:12.011,row:2,col: 5,iso:[["C-12",98.9],["C-13",1.1]]},
+      {n:7,s:"N",name:"نیتروژن",cat:"nonmetal",state:"گاز",mass:14.007,row:2,col: 4,iso:[["N-14",99.6],["N-15",0.4]]},
+      {n:8,s:"O",name:"اکسیژن",cat:"nonmetal",state:"گاز",mass:15.999,row:2,col: 3,iso:[["O-16",99.76],["O-18",0.2],["O-17",0.04]]},
+      {n:9,s:"F",name:"فلوئور",cat:"halogen",state:"گاز",mass:18.998,row:2,col: 2,iso:[["F-19",100]]},
+      {n:10,s:"Ne",name:"نئون",cat:"noble",state:"گاز",mass:20.180,row:2,col: 1,iso:[["Ne-20",90.5],["Ne-22",9.3],["Ne-21",0.2]]},
+      {n:11,s:"Na",name:"سدیم",cat:"alkali",state:"جامد",mass:22.990,row:3,col: 18,iso:[["Na-23",100]]},
+      {n:12,s:"Mg",name:"منیزیم",cat:"alkaline",state:"جامد",mass:24.305,row:3,col: 17,iso:[["Mg-24",78.99],["Mg-25",10],["Mg-26",11.01]]},
+      {n:13,s:"Al",name:"آلومینیوم",cat:"post",state:"جامد",mass:26.982,row:3,col: 6,iso:[["Al-27",100]]},
+      {n:14,s:"Si",name:"سیلیکون",cat:"metalloid",state:"جامد",mass:28.085,row:3,col: 5,iso:[["Si-28",92.2],["Si-29",4.7],["Si-30",3.1]]},
+      {n:15,s:"P",name:"فسفر",cat:"nonmetal",state:"جامد",mass:30.974,row:3,col: 4,iso:[["P-31",100]]},
+      {n:16,s:"S",name:"گوگرد",cat:"nonmetal",state:"جامد",mass:32.06,row:3,col: 3,iso:[["S-32",95],["S-34",4],["S-33",1]]},
+      {n:17,s:"Cl",name:"کلر",cat:"halogen",state:"گاز",mass:35.45,row:3,col: 2,iso:[["Cl-35",75.8],["Cl-37",24.2]]},
+      {n:18,s:"Ar",name:"آرگون",cat:"noble",state:"گاز",mass:39.948,row:3,col: 1,iso:[["Ar-40",99.6],["Ar-36",0.34],["Ar-38",0.06]]},
+      {n:19,s:"K",name:"پتاسیم",cat:"alkali",state:"جامد",mass:39.098,row:4,col: 18,iso:[["K-39",93.3],["K-41",6.7]]},
+      {n:20,s:"Ca",name:"کلسیم",cat:"alkaline",state:"جامد",mass:40.078,row:4,col: 17,iso:[["Ca-40",96.9],["Ca-44",2.1]]},
+      {n:21,s:"Sc",name:"اسکاندیم",cat:"transition",state:"جامد",mass:44.956,row:4,col: 16,iso:[["Sc-45",100]]},
+      {n:22,s:"Ti",name:"تیتانیوم",cat:"transition",state:"جامد",mass:47.867,row:4,col: 15,iso:[["Ti-48",73.7],["Ti-46",8.2]]},
+      {n:23,s:"V",name:"وانادیم",cat:"transition",state:"جامد",mass:50.942,row:4,col: 14,iso:[["V-51",99.75],["V-50",0.25]]},
+      {n:24,s:"Cr",name:"کروم",cat:"transition",state:"جامد",mass:51.996,row:4,col: 13,iso:[["Cr-52",83.8]]},
+      {n:25,s:"Mn",name:"منگنز",cat:"transition",state:"جامد",mass:54.938,row:4,col: 12,iso:[["Mn-55",100]]},
+      {n:26,s:"Fe",name:"آهن",cat:"transition",state:"جامد",mass:55.845,row:4,col: 11,iso:[["Fe-56",91.75]]},
+      {n:27,s:"Co",name:"کبالت",cat:"transition",state:"جامد",mass:58.933,row:4,col: 10,iso:[["Co-59",100]]},
+      {n:28,s:"Ni",name:"نیکل",cat:"transition",state:"جامد",mass:58.693,row:4,col: 9,iso:[["Ni-58",68.1]]},
+      {n:29,s:"Cu",name:"مس",cat:"transition",state:"جامد",mass:63.546,row:4,col: 8,iso:[["Cu-63",69]]},
+      {n:30,s:"Zn",name:"روی",cat:"transition",state:"جامد",mass:65.38,row:4,col: 7,iso:[["Zn-64",48.6]]},
+      {n:31,s:"Ga",name:"گالیم",cat:"post",state:"جامد",mass:69.723,row:4,col: 6,iso:[["Ga-69",60.1]]},
+      {n:32,s:"Ge",name:"ژرمانیم",cat:"metalloid",state:"جامد",mass:72.630,row:4,col: 5,iso:[["Ge-74",36.7]]},
+      {n:33,s:"As",name:"آرسنیک",cat:"metalloid",state:"جامد",mass:74.922,row:4,col: 4,iso:[["As-75",100]]},
+      {n:34,s:"Se",name:"سلنیوم",cat:"nonmetal",state:"جامد",mass:78.971,row:4,col: 3,iso:[["Se-80",49.6]]},
+      {n:35,s:"Br",name:"برم",cat:"halogen",state:"مایع",mass:79.904,row:4,col: 2,iso:[["Br-79",50.7]]},
+      {n:36,s:"Kr",name:"کریپتون",cat:"noble",state:"گاز",mass:83.798,row:4,col: 1,iso:[["Kr-84",57]]}
+    ];
+
+    // لود کامل از JSON داخلی
+    const loadFullBtn = document.getElementById('loadFull');
+    loadFullBtn.addEventListener('click',()=>{
+      const full = JSON.parse(document.getElementById('el-full').textContent);
+      elements = elements.concat(full).sort((a,b)=> a.n-b.n);
+      renderTable(); applyFilters();
+      loadFullBtn.remove();
+    });
+
+    // عنصر DOM
+    const grid = document.getElementById('ptable-grid');
+    const q = document.getElementById('q');
+    const catSel = document.getElementById('cat');
+    const sel = document.getElementById('sel');
+    const pSymbol = document.getElementById('p-symbol');
+    const pName = document.getElementById('p-name');
+    const pNum = document.getElementById('p-num');
+    const pMass = document.getElementById('p-mass');
+    const pCat = document.getElementById('p-cat');
+    const pState = document.getElementById('p-state');
+    const pConf = document.getElementById('p-conf');
+    const isoTableBody = document.querySelector('#isoTable tbody');
+
+    // رندر جدول
+    function renderTable(){
+      grid.innerHTML = '';
+      elements.forEach(e=>{
+        const el = document.createElement('div');
+        const catClass = 'cat-' + (e.cat || 'nonmetal');
+        el.className = `el ${catClass}`; el.style.gridColumn = e.col;
+        el.style.gridRow = e.row;
+        el.dataset.n=e.n; el.dataset.symbol=e.s; el.dataset.name=e.name; el.dataset.cat=e.cat; el.dataset.state=e.state; el.dataset.mass=e.mass;
+        el.tabIndex = 0;
+        el.innerHTML = `<div class="num">${e.n}</div>${e.s}<div class="name">${e.name}</div>`;
+        el.title = `${e.name} — ${e.s} — Z=${e.n}`;
+        el.addEventListener('click',()=>selectEl(e));
+        el.addEventListener('keydown',(ev)=>{ if(ev.key==='Enter') selectEl(e); });
+        grid.appendChild(el);
+      });
+    }
+
+    // جستجوی فازی
+    function normalize(s){ return (s||'').toLowerCase().replace(/[آأإ]/g,'ا').trim(); }
+    function fuzzyMatch(qs, e){
+      const Q = normalize(qs);
+      const fields = [e.s, e.name, String(e.n)].map(normalize);
+      return fields.some(f => f.includes(Q));
+    }
+    function applyFilters(){
+      const query = (q.value||'').trim();
+      const c = catSel.value;
+      grid.querySelectorAll('.el').forEach(el=>{
+        const eObj = elements.find(x=> x.n == +el.dataset.n);
+        const catOk = !c || el.dataset.cat===c;
+        const qOk = !query || fuzzyMatch(query, eObj);
+        el.style.opacity = (catOk && qOk) ? 1 : .18;
+        el.style.filter = (catOk && qOk) ? 'none' : 'grayscale(1)';
+      });
+    }
+    q.addEventListener('input', applyFilters);
+    catSel.addEventListener('change', applyFilters);
+    document.addEventListener('keydown',(ev)=>{ if(ev.key==='/'){ ev.preventDefault(); q.focus(); } });
+    renderTable(); applyFilters();
+
+    // اوربیتال‌ها با قاعده‌ی هاند و استثناهای معروف
+    const orbitalCanvas = document.getElementById('orbitalCanvas');
+    const octx = orbitalCanvas.getContext('2d');
+    const exceptions = new Set(['Cr','Cu','Mo','Ag']);
+
+    function electronConfigHund(Z, symbol){
+      const order = [
+        {n:1,l:'s',cap:2},{n:2,l:'s',cap:2},{n:2,l:'p',cap:6},{n:3,l:'s',cap:2},{n:3,l:'p',cap:6},
+        {n:4,l:'s',cap:2},{n:3,l:'d',cap:10},{n:4,l:'p',cap:6},
+        {n:5,l:'s',cap:2},{n:4,l:'d',cap:10},{n:5,l:'p',cap:6},
+        {n:6,l:'s',cap:2},{n:4,l:'f',cap:14},{n:5,l:'d',cap:10},{n:6,l:'p',cap:6},
+        {n:7,l:'s',cap:2},{n:5,l:'f',cap:14},{n:6,l:'d',cap:10},{n:7,l:'p',cap:6}
+      ];
+      let left = Z;
+      const conf = [];
+      for(const sub of order){
+        if(left<=0) break;
+        const put = Math.min(left, sub.cap);
+        conf.push({...sub, e: put});
+        left -= put;
+      }
+      if(exceptions.has(symbol)){
+        const dIdx = conf.findIndex(s=> s.l==='d');
+        const sIdx = conf.findIndex(s=> s.l==='s' && s.n === (conf[dIdx]?.n||0)+1);
+        if(dIdx>=0 && sIdx>=0 && conf[sIdx].e>0){
+          conf[sIdx].e -= 1; conf[dIdx].e += 1;
+        }
+      }
+      return conf;
+    }
+    function configString(conf){
+      return conf.map(s=> `${s.n}${s.l}<sup>${s.e}</sup>`).join(' ');
+    }
+    function drawOrbitalsHund(conf){
+      const ctx = octx, W = orbitalCanvas.width, H = orbitalCanvas.height;
+      ctx.clearRect(0,0,W,H);
+      const cx=W/2, cy=H/2;
+      const colors = {s:'#4da6ff', p:'#37ff8b', d:'#ff9f59', f:'#a78bfa'};
+      const layers = {};
+      conf.forEach(s=>{
+        (layers[s.n] ||= []).push({type:s.l, e:s.e});
+      });
+      const ns = Object.keys(layers).map(Number).sort((a,b)=>a-b);
+      ns.forEach((n,i)=>{
+        const r = 40 + i*26;
+        ctx.strokeStyle='#8992b3'; ctx.lineWidth=1.1;
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+        const subs = layers[n];
+        subs.forEach((sub, subIdx)=>{
+          const slots = (sub.type==='s')?1 : (sub.type==='p')?3 : (sub.type==='d')?5 : 7;
+          const electrons = sub.e;
+          let placed = 0;
+          // نیم‌پر پیش از جفت‌شدن
+          for(let k=0; k<slots && placed<electrons; k++){
+            const ang = (k/slots)*2*Math.PI;
+            const x = cx+Math.cos(ang)*r, y = cy+Math.sin(ang)*r;
+            ctx.fillStyle=colors[sub.type];
+            ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill();
+            placed++;
+          }
+          let k=0;
+          while(placed<electrons){
+            const ang = (k/slots)*2*Math.PI;
+            const x = cx+Math.cos(ang)*r, y = cy+Math.sin(ang)*r;
+            ctx.fillStyle=colors[sub.type];
+            ctx.beginPath(); ctx.arc(x+6,y,4.2,0,Math.PI*2); ctx.fill();
+            placed++; k++;
+          }
+          ctx.fillStyle='#a6afd3'; ctx.font='11px sans-serif';
+          ctx.fillText(`${sub.type}`, cx+r+6, cy-8+subIdx*12);
+        });
+        ctx.fillStyle='#a6afd3'; ctx.font='12px sans-serif';
+        ctx.fillText(`n=${n}`, cx+r+6, cy+4);
+      });
+    }
+
+    // انتخاب عنصر
+    function selectEl(e){
+      sel.innerHTML = `عنصر انتخابی: <strong>${e.s}</strong> — ${e.name} (Z=${e.n})`;
+      pSymbol.textContent = e.s; pName.textContent = e.name; pNum.textContent = e.n; pMass.textContent = e.mass; pCat.textContent = e.cat; pState.textContent = e.state;
+      const conf = electronConfigHund(e.n, e.s);
+      pConf.innerHTML = configString(conf);
+      isoTableBody.innerHTML = '';
+      (e.iso||[]).forEach(([iso,ab])=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${iso}</td><td>${ab}%</td>`;
+        isoTableBody.appendChild(tr);
+      });
+      drawOrbitalsHund(conf);
+    }
+
+    // خروجی اوربیتال‌ها و ایزوتوپ‌ها
+    document.getElementById('exportOrbitals').addEventListener('click',()=>{
+      const url = orbitalCanvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = `orbitals_${pSymbol.textContent}.png`; a.click();
+    });
+    document.getElementById('exportIso').addEventListener('click',()=>{
+      const rows = [...isoTableBody.querySelectorAll('tr')].map(tr=> [...tr.children].map(td=> td.textContent));
+      const csv = 'isotope,abundance\n' + rows.map(r=> r.join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `isotopes_${pSymbol.textContent}.csv`; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // اسپکتروسکوپی
+    const specCanvas = document.getElementById('specCanvas'), specEl = document.getElementById('specEl'), drawSpec = document.getElementById('drawSpec'); const sctx = specCanvas.getContext('2d');
+    const spectra = {'H':[656,486,434,410],'He':[447,501,587,667],'Na':[589,589],'Hg':[405,436,546,577],'Fe':[438,492,526,532,550]};
+    function drawGradient(){
+      const grd = sctx.createLinearGradient(0,0,specCanvas.width,0);
+      grd.addColorStop(0,'#4b0082'); grd.addColorStop(.17,'#0000ff'); grd.addColorStop(.33,'#00ffff'); grd.addColorStop(.5,'#00ff00'); grd.addColorStop(.67,'#ffff00'); grd.addColorStop(.83,'#ff7f00'); grd.addColorStop(1,'#ff0000');
+      sctx.fillStyle = grd; sctx.fillRect(0,0,specCanvas.width,specCanvas.height);
+    }
+    function nmToX(nm){ const min=380, max=740; return (nm-min)/(max-min)*specCanvas.width; }
+    function drawLines(lines){
+      sctx.globalAlpha=0.95;
+      lines.forEach(nm=>{
+        const x = nmToX(nm);
+        sctx.strokeStyle = '#ffffff'; sctx.lineWidth = 2;
+        sctx.beginPath(); sctx.moveTo(x,20); sctx.lineTo(x,specCanvas.height-20); sctx.stroke();
+        sctx.fillStyle='#fff'; sctx.font='12px monospace'; sctx.fillText(`${nm} nm`, x+4, 28);
+      });
+    }
+    drawSpec.addEventListener('click',()=>{ sctx.clearRect(0,0,specCanvas.width,specCanvas.height); drawGradient(); drawLines(spectra[specEl.value]||[]); });
+    drawSpec.click();
+
+    // مولکول‌ساز 2D
+    const svg = document.getElementById('molCanvas'), molOut = document.getElementById('molOut'), samples2d = document.querySelectorAll('[data-sample]'), clearMol = document.getElementById('clearMol');
+    let atoms=[], bonds=[], selected=null;
+    const maxValence = {H:1,O:2,N:3,C:4};
+    function bondCount(i){ return bonds.reduce((acc,[a,b])=> acc + ((a===i||b===i)?1:0), 0); }
+    function drawMol(){
+      svg.innerHTML='';
+      bonds.forEach(([i,j])=>{
+        const a=atoms[i], b=atoms[j];
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+        line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+        line.setAttribute('class','bond'); svg.appendChild(line);
+      });
+      atoms.forEach((a,idx)=>{
+        const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+        const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('cx',a.x); c.setAttribute('cy',a.y); c.setAttribute('r',16); c.setAttribute('class','atom');
+        c.addEventListener('click',()=>{
+          if(selected===null){ selected=idx; molOut.textContent=`اتم انتخاب شد: ${a.s}. روی اتم دوم کلیک برای پیوند.`; }
+          else if(selected!==idx){
+            const canA = bondCount(selected) < (maxValence[atoms[selected].s]||4);
+            const canB = bondCount(idx) < (maxValence[atoms[idx].s]||4);
+            if(canA && canB){ bonds.push([selected,idx]); molOut.textContent='پیوند ساخته شد.'; }
+            else{ molOut.textContent='ظرفیت یکی از اتم‌ها پر شده.'; }
+            selected=null; drawMol();
+          } else { selected=null; molOut.textContent='لغو انتخاب.'; }
+        });
+        const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',a.x); t.setAttribute('y',a.y+4); t.setAttribute('text-anchor','middle'); t.setAttribute('class','label'); t.textContent=a.s;
+        g.appendChild(c); g.appendChild(t); svg.appendChild(g);
+      });
+    }
+    svg.addEventListener('click',(e)=>{
+      const rect=svg.getBoundingClientRect(); const x=e.clientX-rect.left, y=e.clientY-rect.top;
+      const s = e.altKey ? 'H' : (e.shiftKey ? 'O' : (e.ctrlKey ? 'N' : 'C'));
+      atoms.push({s,x,y}); drawMol();
+    });
+    clearMol.addEventListener('click',()=>{ atoms=[]; bonds=[]; selected=null; drawMol(); molOut.textContent='پاک شد. روی بوم کلیک کن تا اتم اضافه شود.'; });
+    const sampleLayouts = {
+      'H2O': ()=>{ atoms=[{s:'O',x:300,y:140},{s:'H',x:260,y:100},{s:'H',x:340,y:100}]; bonds=[[0,1],[0,2]]; },
+      'C2H6O': ()=>{ atoms=[{s:'C',x:280,y:140},{s:'C',x:330,y:140},{s:'O',x:380,y:140},{s:'H',x:260,y:100},{s:'H',x:260,y:180},{s:'H',x:300,y:100},{s:'H',x:310,y:180},{s:'H',x:350,y:100},{s:'H',x:350,y:180}]; bonds=[[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[1,8]]; },
+      'C6H6': ()=>{ const cx=300,cy=140,r=60; atoms=[]; for(let i=0;i<6;i++){ const ang=(Math.PI*2/6)*i; atoms.push({s:'C',x:cx+Math.cos(ang)*r,y:cy+Math.sin(ang)*r}); }
+                  bonds=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]; for(let i=0;i<6;i++){ atoms.push({s:'H',x:atoms[i].x+(atoms[i].x-cx)*0.5,y:atoms[i].y+(atoms[i].y-cy)*0.5}); bonds.push([i,6+i]); } }
+    };
+    samples2d.forEach(b=> b.addEventListener('click',()=>{ sampleLayouts[b.dataset.sample](); drawMol(); molOut.textContent=`نمونه ${b.dataset.sample} بارگذاری شد.`; }));
+    drawMol();
+
+    // 3D سبک روی Canvas
+    const mol3dCanvas = document.getElementById('mol3dCanvas');
+    const mctx = mol3dCanvas.getContext('2d');
+    const mol3dSel = document.getElementById('mol3dSel');
+    const mol3dDraw = document.getElementById('mol3dDraw');
+    let angleX = 0, angleY = 0;
+    let mouseDown = false, lastX=0, lastY=0;
+    mol3dCanvas.addEventListener('mousedown',e=>{ mouseDown=true; lastX=e.clientX; lastY=e.clientY; });
+    window.addEventListener('mouseup',()=>{ mouseDown=false; });
+    window.addEventListener('mousemove',e=>{
+      if(!mouseDown) return;
+      angleY += (e.clientX - lastX) * 0.01;
+      angleX += (e.clientY - lastY) * 0.01;
+      lastX = e.clientX; lastY = e.clientY;
+      draw3d(currentMol);
+    });
+
+    function rotX(p,a){ const c=Math.cos(a), s=Math.sin(a); return {x:p.x, y:p.y*c - p.z*s, z:p.y*s + p.z*c}; }
+    function rotY(p,a){ const c=Math.cos(a), s=Math.sin(a); return {x:p.x*c + p.z*s, y:p.y, z:-p.x*s + p.z*c}; }
+    function proj(p){ const d = 400; const z = p.z + d; const s = d / z; return {x: mol3dCanvas.width/2 + p.x*s, y: mol3dCanvas.height/2 + p.y*s, s}; }
+    function drawSphere(x,y,r,color){ mctx.fillStyle=color; mctx.beginPath(); mctx.arc(x,y,r,0,Math.PI*2); mctx.fill(); }
+    function drawStick(x1,y1,x2,y2,color){ mctx.strokeStyle=color; mctx.lineWidth=4; mctx.beginPath(); mctx.moveTo(x1,y1); mctx.lineTo(x2,y2); mctx.stroke(); }
+    const colors = {H:'#ffffff', C:'#444', O:'#ff4d4d', N:'#4da6ff'};
+    const models = {
+      'H2O': {atoms:[{s:'O',x:0,y:0,z:0},{s:'H',x:-40,y:30,z:0},{s:'H',x:40,y:30,z:0}], bonds:[[0,1],[0,2]]},
+      'CO2': {atoms:[{s:'O',x:-60,y:0,z:0},{s:'C',x:0,y:0,z:0},{s:'O',x:60,y:0,z:0}], bonds:[[0,1],[1,2]]},
+      'CH4': {atoms:[{s:'C',x:0,y:0,z:0},{s:'H',x:60,y:0,z:0},{s:'H',x:-60,y:0,z:0},{s:'H',x:0,y:60,z:0},{s:'H',x:0,y:-60,z:0}], bonds:[[0,1],[0,2],[0,3],[0,4]]},
+      'C2H6O': {atoms:[{s:'C',x:-40,y:0,z:0},{s:'C',x:40,y:0,z:0},{s:'O',x:100,y:0,z:0},{s:'H',x:-80,y:40,z:0},{s:'H',x:-80,y:-40,z:0},{s:'H',x:0,y:40,z:0},{s:'H',x:0,y:-40,z:0},{s:'H',x:80,y:40,z:0},{s:'H',x:80,y:-40,z:0}], bonds:[[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[1,8]]},
+      'C6H6': {atoms:(()=>{ const a=[]; const r=80; for(let i=0;i<6;i++){const ang=(Math.PI*2/6)*i; a.push({s:'C',x:Math.cos(ang)*r,y:Math.sin(ang)*r,z:0});} for(let i=0;i<6;i++){ const v=a[i]; a.push({s:'H',x:v.x*1.4,y:v.y*1.4,z:0}); } return a; })(), bonds:(()=>{ const b=[]; for(let i=0;i<6;i++){ b.push([i,(i+1)%6]); b.push([i,6+i]); } return b; })()}
+    };
+    let currentMol = models['H2O'];
+    function draw3d(model){
+      mctx.clearRect(0,0,mol3dCanvas.width,mol3dCanvas.height);
+      mctx.fillStyle='#0b1022'; mctx.fillRect(0,0,mol3dCanvas.width,mol3dCanvas.height);
+      const transformed = model.atoms.map(p=> rotY(rotX(p,angleX), angleY));
+      const projected = transformed.map(p=> proj(p));
+      model.bonds.forEach(([i,j])=>{
+        const pi = projected[i], pj = projected[j];
+        drawStick(pi.x,pi.y,pj.x,pj.y,'#8ab');
+      });
+      projected.forEach((pp,idx)=>{
+        const s = model.atoms[idx].s;
+        drawSphere(pp.x, pp.y, 12*pp.s/2, colors[s]||'#ccc');
+      });
+    }
+    mol3dDraw.addEventListener('click',()=>{ currentMol = models[mol3dSel.value]; draw3d(currentMol); });
+    draw3d(currentMol);
+
+    // بانک واکنش‌ها
+    const bankData = [
+      {eq:'Zn + 2HCl -> ZnCl2 + H2', topic:'acid-base', level:'basic'},
+      {eq:'Fe + O2 -> Fe2O3', topic:'redox', level:'basic'},
+      {eq:'KMnO4 + HCl -> KCl + MnCl2 + Cl2 + H2O', topic:'redox', level:'advanced'},
+      {eq:'CH4 + 2O2 -> CO2 + 2H2O(l)', topic:'thermo', level:'basic'},
+      {eq:'C2H6O + 3O2 -> 2CO2 + 3H2O', topic:'org', level:'intermediate'},
+      {eq:'NH3 + HCl -> NH4Cl', topic:'acid-base', level:'basic'}
+    ];
+    const bankQ = document.getElementById('bankQ');
+    const bankTopic = document.getElementById('bankTopic');
+    const bankLevel = document.getElementById('bankLevel');
+    const bankTableBody = document.querySelector('#bankTable tbody');
+
+    function renderBank(){
+      bankTableBody.innerHTML = '';
+      const qv = (bankQ.value||'').toLowerCase();
+      const tv = bankTopic.value; const lv = bankLevel.value;
+      bankData.forEach(item=>{
+        const passQ = !qv || item.eq.toLowerCase().includes(qv);
+        const passT = !tv || item.topic===tv;
+        const passL = !lv || item.level===lv;
+        if(passQ && passT && passL){
+          const tr = document.createElement('tr');
+          const btn = `<button class="btn" data-eq="${item.eq}">ارسال</button>`;
+          tr.innerHTML = `<td>${item.eq}</td><td>${item.topic}</td><td>${item.level}</td><td>${btn}</td>`;
+          bankTableBody.appendChild(tr);
+        }
+      });
+      bankTableBody.querySelectorAll('button[data-eq]').forEach(b=>{
+        b.addEventListener('click',()=>{ document.getElementById('eq').value = b.dataset.eq; window.location.hash = '#rxn'; });
+      });
+    }
+    bankQ.addEventListener('input', renderBank);
+    bankTopic.addEventListener('change', renderBank);
+    bankLevel.addEventListener('change', renderBank);
+    renderBank();
+
+    // نرنست
+    const E0 = document.getElementById('E0'), nEl = document.getElementById('n'), QEl = document.getElementById('Q'), nernstOut = document.getElementById('nernstOut');
+    document.getElementById('calcNernst').addEventListener('click',()=>{
+      const E0v = parseFloat(E0.value), nv = parseInt(nEl.value), Qv = parseFloat(QEl.value);
+      if([E0v,nv,Qv].every(x=>isFinite(x)) && nv>0 && Qv>0){
+        const E = E0v - (0.05916/nv) * Math.log10(Qv);
+        nernstOut.textContent = `E(۲۵°C): ${E.toFixed(3)} V`;
+        nernstOut.className = 'pill ok';
+        addScore(5);
+      }else{
+        nernstOut.textContent = 'ورودی معتبر نیست.'; nernstOut.className = 'pill bad';
+      }
+    });
+
+    // pH
+    const phType = document.getElementById('phType'), CEl = document.getElementById('C'), KaEl = document.getElementById('Ka'), pKaEl = document.getElementById('pKa'), ratioEl = document.getElementById('ratio'), phOut = document.getElementById('phOut');
+    document.getElementById('calcPH').addEventListener('click',()=>{
+      const c = parseFloat(CEl.value)||0, ka = parseFloat(KaEl.value)||0, pka = parseFloat(pKaEl.value)||0, r = parseFloat(ratioEl.value)||0;
+      function clamp(x){ return Math.max(0, Math.min(14, x)); }
+      let pH = NaN;
+      if(phType.value==='strongA'){ pH = clamp(-Math.log10(Math.max(c,1e-12))); }
+      else if(phType.value==='strongB'){ pH = clamp(14 + Math.log10(Math.max(c,1e-12))*(-1)); }
+      else if(phType.value==='weakA'){ const x = Math.sqrt(Math.max(ka*c,0)); pH = clamp(-Math.log10(Math.max(x,1e-12))); }
+      else if(phType.value==='weakB'){ const x = Math.sqrt(Math.max(ka*c,0)); pH = clamp(14 + Math.log10(Math.max(x,1e-12))*(-1)); }
+      else if(phType.value==='buffer'){ pH = clamp(pka + Math.log10(Math.max(r,1e-6))); }
+      phOut.textContent = isFinite(pH) ? `pH: ${pH.toFixed(2)}` : 'ورودی‌ها را درست بده.';
+      phOut.className = isFinite(pH) ? 'pill ok' : 'pill bad';
+      if(isFinite(pH)) addScore(5);
+    });
+
+    // ΔH
+    const Hf = {
+      'CH4': -74.8, 'CO2': -393.5, 'H2O(l)': -285.8, 'H2O(g)': -241.8, 'O2': 0, 'H2': 0,
+      'NH3': -46.1, 'NO2': 33.2, 'N2': 0, 'HCl': -92.3, 'NaCl(s)': -411.1, 'CO': -110.5,
+      'C2H6O(l)': -277.7, 'C6H6(l)': 49.0, 'SO2': -296.8, 'H2SO4(l)': -814.0
+    };
+    function parseSpecies(s){
+      const m = s.match(/(.*?)(\([a-z]\))?$/i); const core = (m? m[1] : s).trim(); const phase = (m && m[2]) ? m[2] : '';
+      return core + (phase ? phase.replace(/[()]/g,'') : '');
+    }
+    function parseSideSimple(side){ return side.split('+').map(x=>x.trim()).filter(Boolean); }
+    function coefAndSpec(s){
+      const m = s.match(/^(\d+)\s*(.*)$/); return {coef: m ? parseInt(m[1]) : 1, spec: m ? m[2].trim() : s.trim()};
+    }
+    const rxnHInput = document.getElementById('rxnH'), dhOut = document.getElementById('dhOut');
+    document.getElementById('calcDH').addEventListener('click',()=>{
+      const raw = (rxnHInput.value||'').replace('→','>').replace('=>','>').replace('->','>').trim();
+      if(!raw.includes('>')){ dhOut.textContent='ΔH: واکنش را با -> وارد کن.'; dhOut.className='pill bad'; return; }
+      const [lhs,rhs] = raw.split('>').map(s=>s.trim());
+      const L = parseSideSimple(lhs).map(coefAndSpec), R = parseSideSimple(rhs).map(coefAndSpec);
+      let sumR=0, sumL=0, missing=[];
+      R.forEach(({coef,spec})=>{ const k=parseSpecies(spec); if(Hf[k]!==undefined) sumR += coef*Hf[k]; else missing.push(k); });
+      L.forEach(({coef,spec})=>{ const k=parseSpecies(spec); if(Hf[k]!==undefined) sumL += coef*Hf[k]; else missing.push(k); });
+      if(missing.length){ dhOut.textContent = 'ΔH: داده‌ی این‌ها موجود نیست: ' + missing.join(', '); dhOut.className='pill warn'; return; }
+      const dH = (sumR - sumL).toFixed(1);
+      dhOut.textContent = `ΔH واکنش ≈ ${dH} kJ/mol`;
+      dhOut.className = 'pill ok';
+      addScore(10);
+    });
+
+    // بالانس خودکار واکنش‌ها
+    const eqIn = document.getElementById('eq'), balanceBtn = document.getElementById('balance'), eqOut = document.getElementById('eqOut');
+    function tokenize(formula){ return formula.match(/[A-Z][a-z]?|\d+|\(|\)|\·|[·]/g) || []; }
+    function countAtoms(formula){
+      const tokens = tokenize(formula); const stack=[new Map()];
+      for(let i=0;i<tokens.length;i++){
+        const t=tokens[i];
+        if(t==='('){ stack.push(new Map()); }
+        else if(t===')'){
+          const top = stack.pop(); const mult = (tokens[i+1] && /^\d+$/.test(tokens[i+1])) ? parseInt(tokens[++i]) : 1;
+          top.forEach((v,k)=> stack[stack.length-1].set(k,(stack[stack.length-1].get(k)||0)+v*mult));
+        }else if(/^[A-Z][a-z]?$/.test(t)){
+          const mult = (tokens[i+1] && /^\d+$/.test(tokens[i+1])) ? parseInt(tokens[++i]) : 1;
+          const cur = stack[stack.length-1]; cur.set(t,(cur.get(t)||0)+mult);
+        }
+      }
+      return stack.pop();
+    }
+    function parseSideEq(side){ return side.split('+').map(s=>s.trim()).filter(Boolean); }
+    function gcd(a,b){ return b?gcd(b,a%b):Math.abs(a); }
+    function lcm(a,b){ return Math.abs(a*b)/gcd(a,b); }
+    function solveBalance(lhsArr, rhsArr){
+      const species = [...lhsArr, ...rhsArr];
+      const m = []; const elems = new Set();
+      species.forEach(s=> countAtoms(s).forEach((v,k)=> elems.add(k)));
+      const elemList = [...elems];
+      elemList.forEach(E=>{
+        const row = species.map((s,idx)=>{
+          const c = countAtoms(s).get(E)||0;
+          return idx < lhsArr.length ? c : -c;
+        });
+        m.push(row);
+      });
+      const cols = species.length;
+      const A = m.map(r=>r.slice());
+      A.push(Array(cols).fill(0).map((v,i)=> i===cols-1 ? 1 : 0));
+      const b = Array(m.length).fill(0).concat([1]);
+      let R = A.map((row,i)=> row.concat([b[i]]));
+      const rows = R.length, colsAug = cols+1;
+      let r=0;
+      for(let c=0;c<cols && r<rows;c++){
+        let piv=r;
+        for(let i=r;i<rows;i++){ if(Math.abs(R[i][c])>Math.abs(R[piv][c])) piv=i; }
+        if(Math.abs(R[piv][c])<1e-9) continue;
+        [R[r],R[piv]]=[R[piv],R[r]];
+        const div = R[r][c];
+        for(let j=c;j<colsAug;j++) R[r][j]/=div;
+        for(let i=0;i<rows;i++){
+          if(i===r) continue;
+          const f = R[i][c];
+          for(let j=c;j<colsAug;j++) R[i][j]-=f*R[r][j];
+        }
+        r++;
+      }
+      let x = Array(cols).fill(0);
+      for(let i=0;i<rows;i++){
+        const j = R[i].findIndex(v=>Math.abs(v-1)<1e-9);
+        if(j>=0) x[j] = R[i][colsAug-1];
+      }
+      const denoms = x.map(v=>{
+        const s = v.toString(); const m = s.match(/\.(\d+)/);
+        return m ? Math.pow(10, m[1].length) : 1;
+      });
+      const mult = denoms.reduce((acc,d)=> lcm(acc,d),1);
+      x = x.map(v=> Math.round(v*mult));
+      const g = x.reduce((acc,v)=> gcd(acc,v), x[0]||1);
+      x = x.map(v=> v/g);
+      return x;
+    }
+    balanceBtn.addEventListener('click',()=>{
+      const raw = (eqIn.value||'').replace('→','>').replace('=>','>').replace('->','>').trim();
+      if(!raw.includes('>')){ eqOut.textContent='نتیجه: واکنش را با -> وارد کن.'; eqOut.className='pill bad'; return; }
+      const [lhs,rhs] = raw.split('>').map(s=>s.trim());
+      const L = parseSideEq(lhs), R = parseSideEq(rhs);
+      try{
+        const coeffs = solveBalance(L,R);
+        const outL = L.map((s,i)=> `${coeffs[i]} ${s}`).join(' + ');
+        const outR = R.map((s,i)=> `${coeffs[L.length+i]} ${s}`).join(' + ');
+        eqOut.textContent = `بالانس: ${outL} -> ${outR}`;
+        eqOut.className = 'pill ok';
+        addScore(15);
+      }catch(err){
+        eqOut.textContent = 'نتوانست بالانس کند. ورودی را ساده‌تر بده یا پرانتزها را بررسی کن.';
+        eqOut.className = 'pill bad';
+      }
+    });
+
+    // سرویس‌ورکر آفلاین (درون همین فایل با Blob)
+    if('serviceWorker' in navigator){
+      const swCode = `
+        const CACHE='chemworld-quantum-plus-v1';
+        const ASSETS=['./'];
+        self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); });
+        self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE && caches.delete(k))))); });
+        self.addEventListener('fetch',e=>{
+          e.respondWith(
+            caches.match(e.request).then(res=> res || fetch(e.request).then(r=>{
+              const copy=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); return r;
+            }).catch(()=>caches.match('./')))
+          );
+        });
+      `;
+      const blob = new Blob([swCode], {type:'text/javascript'});
+      const url = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(url).catch(()=>{});
+    }
+
+    // جلوگیری از انتخاب تصادفی متن
+    document.addEventListener('mousedown',e=>{
+      if(['BUTTON','SELECT','INPUT','TEXTAREA','A','CANVAS'].includes(e.target.tagName)) return;
+      e.preventDefault();
+    },{passive:false});
+
+    // انتخاب اولیه
+    selectEl(elements[0]);
+  </script>
+</body>
+</html>
